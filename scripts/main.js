@@ -21,13 +21,13 @@ require([
     'physicsjs/behaviors/sweep-prune',
     'physicsjs/behaviors/body-impulse-response',
     'physicsjs/bodies/convex-polygon',
-    'physicsjs/behaviors/newtonian'
+    'physicsjs/behaviors/newtonian',
+    'metre-per-second-squared-verlet'
 
 ], function( Physics ){
     Physics(function (world) {
-    //    console.log(Physics);
-        var viewWidth = window.innerWidth
-            ,viewHeight = window.innerHeight
+        var viewWidth = document.getElementById('simBox').width
+            ,viewHeight = document.getElementById('simBox').height
         // center of the window
             ,center = Physics.vector(viewWidth, viewHeight).mult(0.5)
         // bounds of the window
@@ -59,8 +59,8 @@ require([
         // resize events
         window.addEventListener('resize', function () {
 
-            viewWidth = window.innerWidth;
-            viewHeight = window.innerHeight;
+            viewWidth = window.innerWidth-20;
+            viewHeight = window.innerHeight-20;
 
             renderer.el.width = viewWidth;
             renderer.el.height = viewHeight;
@@ -71,47 +71,41 @@ require([
 
         }, true);
 
-//        // move the attractor position to match the mouse coords
-//        renderer.el.addEventListener('mousemove', function( e ){
-//            attractor.position({ x: e.pageX, y: e.pageY });
-//        });
 
         // create some bodies
-        var b, r;
+        var b, r, height, width, ramp;
+        width = 700;
+        height = -500
+        r = 90;
+        ramp = Physics.body('convex-polygon', {
+            name: 'ramp',
+            x: 250,
+            y: viewHeight,
+            treatment: 'static',
+            restitution: 0,
+            vertices: [
+                {x: 0, y: 0},
+                {x: 0, y: -viewHeight-100},
+                {x: width, y: 0}
+            ]
+        })
 
-        r = (20 + Math.random()*30)|0;
         b = Physics.body('circle', {
+            cof: 0,
             radius: r
             ,mass: r
-            ,x: Math.random()*viewWidth
-            ,y: 0
-//            ,vx:1
-//          ,vx: v.y
+            ,x: 2*r
+            ,y: 120
             ,styles: {
-                fillStyle:'#cb4b16'
-
-
+                angleIndicator: '#000',
+                fillStyle: '#ffea00'
             }
         });
 
-//        var pentagon = Physics.body('convex-polygon', {
-//            treatment: 'static',
-//            // place the centroid of the polygon at (300, 200)
-//            x: 300,
-//            y: 200,
-//
-//            // the centroid is automatically calculated and used to position the shape
-//            vertices: [
-//                { x: 0, y: -30 },
-//                { x: -29, y: -9 },
-//                { x: -18, y: 24 },
-//                { x: 18, y: 24 },
-//                { x: 29, y: -9 }
-//            ]
-//        });
 
         // add things to the world
 //        world.add(pentagon)
+        world.add(ramp);
         world.add( b );
         world.add([
             Physics.behavior('body-impulse-response')
@@ -124,9 +118,10 @@ require([
         // subscribe to ticker to advance the simulation
         Physics.util.ticker.on(function( time ) {
             world.step( time );
+//            console.log(b.state.vel);
         });
-
-        // start the ticker
+//
+//        // start the ticker
         Physics.util.ticker.start();
     });
 
