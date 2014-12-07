@@ -34,17 +34,18 @@
             // extended
             init: function( options ){
                 // call parent init
-                options.metre = options.metre || 41;
+                this.metre = options.metre || 41;
                 parent.init.call(this, options);
             },
             // extended
             integrateVelocities: function( bodies, dt ){
+//                console.log('doo dooooo');
                 // timestep squared
                 var dtdt = dt * dt
                     ,drag = 1 - this.options.drag
                     ,body = null
                     ,state
-                    ,metre = this.options.metre
+                    ,metre = this.metre || 41
                     ;
                 for ( var i = 0, l = bodies.length; i < l; ++i ){
                     body = bodies[ i ];
@@ -72,7 +73,10 @@
                         }
                         // Apply acceleration
                         // v += a * dt * dt
+//                        console.log(metre);
                         state.vel.vadd( state.acc.mult( ( dtdt / 1000000 ) * metre ) );
+//                        state.vel.vadd( state.acc.mult( ( dtdt ) ) );
+
                         // normalize velocity
                         state.vel.mult( 1/dt );
                         // store calculated velocity

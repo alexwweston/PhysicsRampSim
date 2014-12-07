@@ -22,10 +22,20 @@ require([
     'physicsjs/behaviors/body-impulse-response',
     'physicsjs/bodies/convex-polygon',
     'physicsjs/behaviors/newtonian',
-    'metre-per-second-squared-verlet'
+    'physicsjs/integrators/metre-per-second-squared-verlet'
 
 ], function( Physics ){
-    Physics(function (world) {
+    Physics({
+//            integrator: 'metre-per-second-squared-verlet'
+
+        },
+
+        function (world) {
+        //inputs
+        var ballheight;//@todo utilize
+        var friction = 0;
+        var metre = 51;
+
         var viewWidth = document.getElementById('simBox').width
             ,viewHeight = document.getElementById('simBox').height
         // center of the window
@@ -56,6 +66,11 @@ require([
             ,cof: 0.8
         });
 
+            // metre per second squared verlet integrator
+            mppsvi = Physics.integrator('metre-per-second-squared-verlet', {
+                metre: metre
+            });
+
         // resize events
         window.addEventListener('resize', function () {
 
@@ -76,7 +91,7 @@ require([
         var b, r, height, width, ramp;
         width = 700;
         height = -500
-        r = 90;
+        r = 2*metre;
         ramp = Physics.body('convex-polygon', {
             name: 'ramp',
             x: 250,
@@ -91,9 +106,9 @@ require([
         })
 
         b = Physics.body('circle', {
-            cof: 0,
+            cof: friction,
             radius: r
-            ,mass: r
+            ,mass: 5
             ,x: 2*r
             ,y: 120
             ,styles: {
@@ -108,9 +123,14 @@ require([
         world.add(ramp);
         world.add( b );
         world.add([
+            mppsvi,
             Physics.behavior('body-impulse-response')
             ,edgeBounce
-            ,Physics.behavior('constant-acceleration')
+            ,Physics.behavior('constant-acceleration'
+                ,{
+                acc: { x : 0, y: 9.8 }
+            }
+            )
             ,Physics.behavior('body-collision-detection')
             ,Physics.behavior('sweep-prune')
         ]);
