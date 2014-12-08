@@ -1,6 +1,19 @@
+/*
 #inputs{
     float: right;
 }
 #outputs{
     float: right;
+}
+*/
+#sidebar{
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 200px;
+    height: 100%;
+    background-color: cadetblue;
+    z-index: 20;
+    padding: 20px 5px 5px 10px;
+
 }

@@ -26,24 +26,26 @@ require([
 ], function( Physics ){
     Physics({
             getBallHeight: function getBallHeight(){
-                return 10;
+                return document.getElementById("ballHeight").value;
             },
             getFriction: function getFriction (){
-                return 1;
+                return document.getElementById("friction").value-0;
             }
         },
         function (world) {
         //inputs
-        console.log(world);
-        var ballheight = world.options.getBallHeight();//@todo utilize
         var friction = world.options.getFriction();
         var metre = 30;
+        world.metre = metre;
+
+
 
         var viewWidth = document.getElementById('simBox').width
-            ,viewHeight = document.getElementById('simBox').height
+        ,viewHeight = document.getElementById('simBox').height
         // bounds of the window
-            ,viewportBounds = Physics.aabb(0, 0, viewWidth, viewHeight)
-            ,renderer;
+        ,viewportBounds = Physics.aabb(0, 0, viewWidth, viewHeight)
+        ,renderer;
+        var ballHeight =(world.options.getBallHeight()*metre);//@todo utilize
 
         world.getSimHeight = function (objHeight){
             return (viewHeight-objHeight)/metre;
@@ -99,8 +101,8 @@ require([
             cof: friction,
             radius: r
             ,mass: 5
-            ,x: 2*r
-            ,y: 120
+            ,x: ((height - ballHeight)*width/height) + (r/Math.sin(Math.atan(height/width)))
+            ,y: viewHeight - ballHeight
             ,styles: {
                 angleIndicator: '#000',
                 fillStyle: '#ffea00'
@@ -108,7 +110,6 @@ require([
         });
 
         // add things to the world
-//        world.add(pentagon)
         world.add(ramp);
         world.add( b );
         world.add([
@@ -125,20 +126,26 @@ require([
         // subscribe to ticker to advance the simulation
         Physics.util.ticker.on(function( time ) {
             world.step( time );
-            var sigfig = 10000;
-            var metrePerSecond = 30 / 1000;
+            world.pause();
 
-            document.getElementById('velocity').innerHTML = Math.round((b.state.vel.norm()/ metrePerSecond)*sigfig)/sigfig;///sigfig + ", " + Math.round(b.state.vel.y*sigfig)/sigfig;
-
-            if(b.state.pos && b.state.pos.y && world.getSimHeight(b.state.pos.y) < 1.1 ){
+            var sigfig = 1000;
+            var metrePerSecond = world.metre / 1000;
+            var velocity = Math.round((b.state.vel.norm()/ metrePerSecond)*sigfig)/sigfig;
+            var height = world.getSimHeight(b.state.pos.y);
+            document.getElementById('velocity').innerHTML = velocity;
+            document.getElementById('acceleration').innerHTML = Math.round((b.state.acc.norm())*sigfig)/sigfig;
+            document.getElementById('PotentialEnergy').innerHTML = Math.round(height* b.mass * 9.8*sigfig)/sigfig;
+            document.getElementById('KineticEnergy').innerHTML = Math.round(.5 * b.mass * (Math.pow(velocity,2))*sigfig)/sigfig;
+            if(b.state.pos && b.state.pos.y && height < 1.1 ){
                 if(!world.isPaused()){
                     world.pause();
                 }
             }
-            else{
-                console.log(world.getSimHeight(b.state.pos.y));
-            }
+
         });
+        document.getElementById("resetBtn").onclick = function (){
+            console.log("clicked");
+        }
         // start the ticker
         Physics.util.ticker.start();
     });
