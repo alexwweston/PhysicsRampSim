@@ -5,9 +5,18 @@
     <!-- data-main attribute tells require.js to load
          scripts/main.js after require.js loads. -->
     <script data-main="scripts/main" src="scripts/require.js"></script>
-    <canvas id="simBox" class=" pjs-layer-main" width="800" height="500" style="position: absolute; z-index: 1; border:1px"></canvas>
+    <link rel="stylesheet" type="text/css" href="project.css">
 </head>
 <body>
-<h1>My Sample Project</h1>
+<h1>Variable Friction Ramp</h1>
+<canvas id="simBox" class=" pjs-layer-main" width="1000" height="800" style="position: absolute; border: 1px solid black;"></canvas>
+<div id="inputs"><span>Inputs</span></div>
+<br/>
+<div id="outputs"><span>Outputs</span>
+    <div> Velocity: <span id="velocity"></span></div>
+    <div> Acceleration: <span id="acceleration"></span></div>
+</div>
+
+
 </body>
 </html>

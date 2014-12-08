@@ -39,7 +39,6 @@
             },
             // extended
             integrateVelocities: function( bodies, dt ){
-//                console.log('doo dooooo');
                 // timestep squared
                 var dtdt = dt * dt
                     ,drag = 1 - this.options.drag
