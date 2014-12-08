@@ -24,45 +24,53 @@ require([
     'physicsjs/integrators/metre-per-second-squared-verlet'
 
 ], function( Physics ){
-    Physics({
-            getBallHeight: function getBallHeight(){
-                return document.getElementById("ballHeight").value;
-            },
-            getFriction: function getFriction (){
-                return document.getElementById("friction").value-0;
-            }
-        },
-        function (world) {
-        //inputs
-        var friction = world.options.getFriction();
-        var metre = 30;
-        world.metre = metre;
+    var world = null;
+
+    //destroy a world and add start a fresh one
+    var newGame = function newGame(){
+        if (world){
+            world.destroy();
+        }
+        world = Physics( init );
+    };
+
+    //(re)start button listener
+    document.getElementById("resetBtn").onclick = function (){
+        newGame(world);
+    };
+
+    //helper UI functions
+    var getBallHeight = function getBallHeight(){
+        return document.getElementById("ballHeight").value;
+    };
+    var getFriction = function getFriction (){
+        return document.getElementById("friction").value-0;
+    }
 
 
-
+    //initialize and start a simulation
+    var init = function init( world, Physics ){
+        //defaults
+        world.metre = 30;
         var viewWidth = document.getElementById('simBox').width
-        ,viewHeight = document.getElementById('simBox').height
-        // bounds of the window
-        ,viewportBounds = Physics.aabb(0, 0, viewWidth, viewHeight)
-        ,renderer;
-        var ballHeight =(world.options.getBallHeight()*metre);//@todo utilize
+            ,viewHeight = document.getElementById('simBox').height
+            ,viewportBounds = Physics.aabb(0, 0, viewWidth, viewHeight);// bounds of the window
 
-        world.getSimHeight = function (objHeight){
-            return (viewHeight-objHeight)/metre;
+        //user inputs
+        var friction = getFriction();
+        var ballHeight =(getBallHeight()*world.metre);
+
+        //helper function for converting from sim height to meter scale height
+        world.getScaledHeight = function (objHeight){
+            return (viewHeight-objHeight)/world.metre;
         }
         // create a renderer
-        renderer = Physics.renderer('canvas', {
+        var renderer = Physics.renderer('canvas', {
             el: 'simBox'
             ,width: viewWidth
             ,height: viewHeight
         });
 
-        // add the renderer
-        world.add(renderer);
-        // render on each step
-        world.on('step', function () {
-            world.render();
-        });
 
         // constrain objects to these bounds
         edgeBounce = Physics.behavior('edge-collision-detection', {
@@ -73,13 +81,12 @@ require([
 
         // metre per second squared verlet integrator
         mppsvi = Physics.integrator('metre-per-second-squared-verlet', {
-            metre: metre
+            metre: world.metre
         });
 
-
-        // create some bodies
+        // create bodies
         var b,
-        r = metre,
+        r = world.metre,
         height = viewHeight -2*r,
         width = viewWidth -4*r,
         ramp;
@@ -95,6 +102,10 @@ require([
                 {x: 0, y: -height},
                 {x: width, y: 0}
             ]
+            ,styles: {
+                angleIndicator: '',
+                fillStyle:'#782e49'
+            }
         })
 
         b = Physics.body('circle', {
@@ -110,11 +121,12 @@ require([
         });
 
         // add things to the world
-        world.add(ramp);
-        world.add( b );
         world.add([
-            mppsvi,
-            Physics.behavior('body-impulse-response')
+            ramp
+            ,b
+            ,renderer
+            ,mppsvi
+            ,Physics.behavior('body-impulse-response')
             ,edgeBounce
             ,Physics.behavior('constant-acceleration'
                 ,{
@@ -123,15 +135,18 @@ require([
             ,Physics.behavior('body-collision-detection')
             ,Physics.behavior('sweep-prune')
         ]);
+        //render on each step
+        world.on('step', function () {
+            world.render();
+        });
         // subscribe to ticker to advance the simulation
         Physics.util.ticker.on(function( time ) {
             world.step( time );
-            world.pause();
 
             var sigfig = 1000;
             var metrePerSecond = world.metre / 1000;
             var velocity = Math.round((b.state.vel.norm()/ metrePerSecond)*sigfig)/sigfig;
-            var height = world.getSimHeight(b.state.pos.y);
+            var height = world.getScaledHeight(b.state.pos.y);
             document.getElementById('velocity').innerHTML = velocity;
             document.getElementById('acceleration').innerHTML = Math.round((b.state.acc.norm())*sigfig)/sigfig;
             document.getElementById('PotentialEnergy').innerHTML = Math.round(height* b.mass * 9.8*sigfig)/sigfig;
@@ -143,12 +158,13 @@ require([
             }
 
         });
-        document.getElementById("resetBtn").onclick = function (){
-            console.log("clicked");
-        }
+
         // start the ticker
         Physics.util.ticker.start();
-    });
+    };
+
+    //do an initial run of the sim on script execution
+    newGame();
 
 });
 
