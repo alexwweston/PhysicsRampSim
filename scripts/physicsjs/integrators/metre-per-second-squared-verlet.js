@@ -1,6 +1,7 @@
 /**
  * This module by @slacktracer: https://coderwall.com/jaywalking101
  * module found here: http://anzol.biz/physicsjs-mpss/integrators/metre-per-second-squared-verlet.js
+ * modified by @alexwweston to fix a small bug
  */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {

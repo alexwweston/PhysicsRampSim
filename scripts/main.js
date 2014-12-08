@@ -1,6 +1,5 @@
 require.config({
     baseUrl: './scripts',
-    // ...
     packages: [
         {
             name: 'physicsjs',
@@ -112,6 +111,7 @@ require([
             cof: friction,
             radius: r
             ,mass: 5
+            //compute x location of ball given desired ballheight
             ,x: ((height - ballHeight)*width/height) + (r/Math.sin(Math.atan(height/width)))
             ,y: viewHeight - ballHeight
             ,styles: {
